@@ -153,37 +153,52 @@ git clone https://github.com/Rishi114/rama.git
 cd rama
 ```
 
-### Step 2: Install Minimal Dependencies
+### Step 2: Choose Your Version
 
+#### 🔹 Minimal Version (Recommended for Start)
 ```bash
 cd rama_ai
 pip install customtkinter requests aiohttp psutil
+python main.py --cli
 ```
 
-That's it! Only **4 packages** needed. 🎉
-
-### ✅ What's Different
-
-| Before | Now |
-|--------|-----|
-| 30+ packages | **4 packages** |
-| SQLite needed | **JSON file** (no setup) |
-| Complex imports | **Graceful fallbacks** |
-
-### Optional (for advanced features)
-
-If you have 16GB+ RAM and want full AI capabilities:
-
+#### 🔹 Full Version (All Features)
 ```bash
-# For voice (STT/TTS)
-pip install faster-whisper silero
-
-# For PDF reading
-pip install pypdf
-
-# For advanced AI
-pip install torch langchain sentence-transformers
+cd rama_ai
+pip install -r requirements-full.txt
+python main.py --cli
 ```
+
+---
+
+### ✅ Two Options
+
+| Feature | Minimal | Full |
+|---------|---------|------|
+| **Packages** | 4 | 30+ |
+| **Storage** | JSON file | SQLite |
+| **AI/ML** | Basic | Full (torch, langchain) |
+| **Voice** | Text only | STT/TTS included |
+| **RAM Needed** | 4GB | 16GB+ |
+
+---
+
+### What's Included
+
+**Minimal (4 packages):**
+- customtkinter - GUI
+- requests - HTTP requests
+- aiohttp - Async HTTP
+- psutil - System info
+
+**Full (30+ packages):**
+- Everything in minimal +
+- torch, langchain - AI/LLM
+- faster-whisper - Speech-to-text
+- silero - Text-to-speech
+- pypdf - PDF reading
+- chromadb - Vector database
+- And more...
 
 ---
 
