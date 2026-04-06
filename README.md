@@ -142,10 +142,9 @@ RAMA AI v2.0 is a production-grade, fully offline AI voice assistant built for W
 
 ### Prerequisites
 
-- **Python 3.8+** - [Download Python](https://www.python.org/downloads/)
+- **Python 3.8+** (3.11/3.12 recommended) - [Download Python](https://www.python.org/downloads/)
 - **Windows 10/11**
-- **8GB RAM** (recommended for LLM)
-- **2GB disk space**
+- **4GB RAM** minimum
 
 ### Step 1: Clone Repository
 
@@ -154,39 +153,36 @@ git clone https://github.com/Rishi114/rama.git
 cd rama
 ```
 
-### Step 2: Create Virtual Environment (Recommended)
-
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-### Step 3: Install Dependencies
+### Step 2: Install Minimal Dependencies
 
 ```bash
 cd rama_ai
-pip install -r requirements.txt
+pip install customtkinter requests aiohttp psutil
 ```
 
-### Step 4: Install Optional Voice Dependencies
+That's it! Only **4 packages** needed. 🎉
 
-For full voice support, install additional packages:
+### ✅ What's Different
+
+| Before | Now |
+|--------|-----|
+| 30+ packages | **4 packages** |
+| SQLite needed | **JSON file** (no setup) |
+| Complex imports | **Graceful fallbacks** |
+
+### Optional (for advanced features)
+
+If you have 16GB+ RAM and want full AI capabilities:
 
 ```bash
-# For STT (Speech-to-Text)
-pip install faster-whisper
+# For voice (STT/TTS)
+pip install faster-whisper silero
 
-# For TTS (Text-to-Speech)  
-pip install silero
+# For PDF reading
+pip install pypdf
 
-# For Wake Word
-pip install pvporcupine
-
-# For audio playback
-pip install sounddevice pyaudio
-
-# For system monitoring
-pip install psutil
+# For advanced AI
+pip install torch langchain sentence-transformers
 ```
 
 ---
