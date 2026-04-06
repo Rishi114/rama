@@ -412,4 +412,11 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="RAMA AI v2.0")
+    parser.add_argument("--cli", action="store_true", help="Run in CLI mode")
+    args = parser.parse_args()
+    
+    if args.cli or len(sys.argv) == 1:
+        asyncio.run(main())

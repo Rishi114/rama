@@ -1,37 +1,41 @@
 @echo off
-REM RAMA AI - Launch with auto Python detection
+REM RAMA AI - Launcher (Double-click to run!)
+cd /d "%~dp0"
 
-set PYTHON_CMD=
-
-REM Try different Python commands
-where python >nul 2>&1
-if %errorlevel% equ 0 set PYTHON_CMD=python
-
-if not defined PYTHON_CMD (
-    where python3 >nul 2>&1
-    if %errorlevel% equ 0 set PYTHON_CMD=python3
-)
-
-if not defined PYTHON_CMD (
-    where py >nul 2>&1
-    if %errorlevel% equ 0 set PYTHON_CMD=py
-)
-
-if not defined PYTHON_CMD (
-    echo.
-    echo ❌ Python not found!
-    echo.
-    echo Please install Python:
-    echo   https://www.python.org/downloads/
-    echo.
-    echo Or run setup.bat for help
-    echo.
-    pause
-    exit /b
-)
-
-echo ✅ Using: %PYTHON_CMD%
+echo.
+echo 🤖 Starting RAMA AI...
 echo.
 
-REM Run RAMA
-%PYTHON_CMD% main.py
+REM Try py launcher first (Windows built-in)
+py --version >nul 2>&1
+if %errorlevel% equ 0 (
+    echo ✅ Using py launcher
+    py main.py --cli
+    goto :end
+)
+
+REM Try python
+python --version >nul 2>&1
+if %errorlevel% equ 0 (
+    echo ✅ Using python
+    python main.py --cli
+    goto :end
+)
+
+REM Try python3
+python3 --version >nul 2>&1
+if %errorlevel% equ 0 (
+    echo ✅ Using python3
+    python3 main.py --cli
+    goto :end
+)
+
+echo.
+echo ❌ Python not installed!
+echo.
+echo Download from: https://www.python.org/downloads/
+echo IMPORTANT: Check "Add Python to PATH"
+echo.
+pause
+
+:end
