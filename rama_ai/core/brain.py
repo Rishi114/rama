@@ -161,19 +161,17 @@ class SkillManager:
         """Load all available skills"""
         from skills.greeting import GreetingSkill
         from skills.calculator import CalculatorSkill
-        from skills.app_launcher import AppLauncherSkill
-        from skills.file_manager import FileManagerSkill
-        from skills.system_info import SystemInfoSkill
-        from skills.weather import WeatherSkill
-        from skills.web_search import WebSearchSkill
-        from skills.note import NoteSkill
-        from skills.reminder import ReminderSkill
-        from skills.knowledge import KnowledgeSkill
-        from skills.coding import CodingSkill
-        from skills.automation import AutomationSkill
-        from skills.local_ai import LocalAISkill
+        from skills.system import AppLauncherSkill, FileManagerSkill, SystemInfoSkill
+        from skills.utilities import WeatherSkill, WebSearchSkill, NoteSkill, ReminderSkill, KnowledgeSkill
+        from skills.coding import CodingSkill, AutomationSkill, LocalAISkill
+        from skills.advanced_tools import (
+            ToolsSkill, WebSearchSkill as AdvancedWebSearchSkill,
+            CriticalThinkingSkill, CodeAnalysisSkill, SystemInfoSkill as GodModeSystemInfo,
+            AutomationSkill as AdvancedAutomation, MemorySkill
+        )
         
         skills = [
+            # Core skills
             GreetingSkill(),
             CalculatorSkill(),
             AppLauncherSkill(),
@@ -187,6 +185,14 @@ class SkillManager:
             CodingSkill(),
             AutomationSkill(),
             LocalAISkill(),
+            # Advanced tools
+            ToolsSkill(),
+            AdvancedWebSearchSkill(),
+            CriticalThinkingSkill(),
+            CodeAnalysisSkill(),
+            GodModeSystemInfo(),
+            AdvancedAutomation(),
+            MemorySkill(),
         ]
         
         for skill in skills:
