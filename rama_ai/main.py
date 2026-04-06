@@ -21,6 +21,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core.personality import RAMAPersonality, create_personality
 from core.system_control import system, handle_system_command
 from skills.skills_manager import SkillsManager, show_skills, get_all_skills
+from skills.json_tools import JSONRepairSkill
+from skills.vercel_skills import SkillManager as VercelSkillManager
+from skills.video_tools import VideoLearningSkill
+from skills.debugging import DebuggingSkill
+from skills.self_learning import SelfLearningSkill
+from skills.learning import ContextLearningSkill
 
 
 class RAMAAI:
@@ -32,6 +38,14 @@ class RAMAAI:
         
         # Skills Manager (includes KiloCode + openclaw)
         self.skills = SkillsManager()
+        
+        # Additional specialized skills
+        self.json_repair = JSONRepairSkill()
+        self.vercel_skills = VercelSkillManager()
+        self.video_learning = VideoLearningSkill()
+        self.debugging = DebuggingSkill()
+        self.self_learning = SelfLearningSkill()
+        self.context_learning = ContextLearningSkill()
         
         # User preferences
         self.user_name = "bhai"
@@ -153,6 +167,22 @@ Bas bolo bhai - karna kya hai? 🔥""",
         # Check code-related
         if any(cmd in text_lower for cmd in ["code", "program", "write code", "generate"]):
             return self.skills.execute("code", text)
+        
+        # JSON Repair
+        if any(cmd in text_lower for cmd in ["fix json", "repair json", "json error", "invalid json"]):
+            return self._handle_json_repair(text)
+        
+        # Vercel Skills
+        if any(cmd in text_lower for cmd in ["install skill", "vercel skill", "add skill"]):
+            return self._handle_vercel_skills(text)
+        
+        # Video Learning
+        if any(cmd in text_lower for cmd in ["learn video", "youtube", "video transcript", "video summary"]):
+            return self._handle_video_learning(text)
+        
+        # Self Learning
+        if any(cmd in text_lower for cmd in ["learn", "remember", "remember this"]):
+            return self._handle_learning(text)
         
         # Generate response based on input
         response = self._generate_response(text_lower)
@@ -332,6 +362,105 @@ Bas bolo bhai - karna kya hai? 🔥""",
             return f"🧮 **Calculation:**\n\n`{expr}` = **{result}**\n\nKya aur calculate karna hai bhai? 🔥"
         except:
             return "🧮 Thik se likho bhai! Jaise: (10+5)*2"
+    
+    def _handle_json_repair(self, text: str) -> str:
+        """Handle JSON repair requests"""
+        # Extract JSON from the command
+        json_text = text.replace("fix json", "").replace("repair json", "").replace("json error", "").replace("invalid json", "").strip()
+        
+        if not json_text:
+            return """🔧 **JSON Repair Tool:**
+
+Send me broken JSON and I'll fix it!
+
+Examples:
+• "fix json {name: 'value'}"
+• "repair json {'key': true,}"
+• "json error {unquoted: 'keys'}"
+
+I can fix:
+- Unquoted keys ✓
+- Single quotes ✓
+- Trailing commas ✓
+- Missing commas ✓
+- Python literals ✓
+- Unclosed brackets ✓"""
+        
+        try:
+            import asyncio
+            result = asyncio.run(self.json_repair.execute(json_text, {}, ""))
+            return result
+        except Exception as e:
+            return f"❌ JSON repair error: {str(e)}"
+    
+    def _handle_vercel_skills(self, text: str) -> str:
+        """Handle Vercel skill commands"""
+        # Check if installing
+        if "install" in text.lower() or "add" in text.lower():
+            # Extract skill name
+            parts = text.lower().split()
+            if len(parts) > 2:
+                skill_name = parts[-1]
+                try:
+                    result = self.vercel_skills.install_skill(skill_name)
+                    return f"✅ Skill installed: {skill_name}\n\n{result}"
+                except Exception as e:
+                    return f"❌ Install failed: {str(e)}"
+        
+        # List installed skills
+        try:
+            skills = self.vercel_skills.list_skills()
+            return f"📦 **Installed Vercel Skills:**\n\n{skills}"
+        except:
+            return "📦 No Vercel skills installed yet"
+    
+    def _handle_video_learning(self, text: str) -> str:
+        """Handle video learning commands"""
+        # Extract URL
+        import re
+        urls = re.findall(r'https?://[^\s]+', text)
+        
+        if urls:
+            url = urls[0]
+            try:
+                import asyncio
+                result = asyncio.run(self.video_learning.execute(f"learn from {url}", {}, ""))
+                return result
+            except Exception as e:
+                return f"❌ Video learning error: {str(e)}"
+        
+        return """📺 **Video Learning:**
+
+Send me a YouTube or Bilibili URL to learn from!
+
+Examples:
+• "learn from https://youtube.com/watch?v=..."
+• "transcript https://bilibili.com/video/..."
+
+Features:
+- Transcript extraction
+- Video summary
+- Content learning"""
+    
+    def _handle_learning(self, text: str) -> str:
+        """Handle learning commands"""
+        # Check if teaching something
+        if any(word in text.lower() for word in ["remember", "learn this", "note"]):
+            try:
+                import asyncio
+                result = asyncio.run(self.self_learning.execute(text, {}, ""))
+                return result
+            except Exception as e:
+                return f"🧠 Learning: {str(e)}"
+        
+        return """🧠 **Learning Skills:**
+
+• "remember X is Y" - Remember facts
+• "learn from video [URL]" - Learn from videos
+• "my name is X" - Remember your name
+• Context aware - Remembers conversations
+
+Bas jo bhi bolo, main yaad rakhoonga! 😎"""
     
     def _smart_fallback(self, text: str) -> str:
         """Generate clever fallback"""

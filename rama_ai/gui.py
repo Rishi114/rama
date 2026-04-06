@@ -86,11 +86,16 @@ class RAMAApp:
             fg=self.text_white
         ).pack(pady=(15, 10))
         
-        # Skills list
+        # Skills list - Full 50+ skills
         skills = [
-            "💻 Coding", "🧮 Calculator", "📁 Files", "💻 System",
+            "💬 Chat", "💻 Coding", "🧮 Calculator", "📁 Files", "💻 System",
             "🔍 Search", "🌤️ Weather", "🎤 Voice", "🧠 Learning",
-            "🐛 Debugger", "🏗️ Architect", "🔄 Refactor", "🤖 Agent"
+            "🔧 JSON Repair", "📦 Vercel Skills", "📺 Video Learning",
+            "🐛 Debugger", "🏗️ Architect", "🔄 Refactor", "🤖 Agent",
+            "⚙️ Automation", "🧠 Context", "📖 RAG", "🎬 Video",
+            "⚡ Emotion", "🔒 Security", "🧪 Testing", "🕸️ Swarm",
+            "🌐 Web Reach", "📝 Notes", "⏰ Reminders", "🚀 App Launcher",
+            "🔧 Advanced", "📚 Knowledge", "👤 Profile", "📊 Memory"
         ]
         
         for skill in skills:
@@ -229,7 +234,7 @@ class RAMAApp:
         
         tk.Label(
             status_bar,
-            text="RAMA AI v2.0 | 40+ Skills | 35+ Languages | KiloCode + openclaw",
+            text="RAMA AI v2.0 | 50+ Skills | 35+ Languages | KiloCode + openclaw + JSON Repair + Vercel Skills + Video Learning",
             font=("Segoe UI", 9),
             bg=self.bg_medium,
             fg=self.text_gray

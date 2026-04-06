@@ -4,60 +4,87 @@
 
 | Category | Count | Details |
 |----------|-------|---------|
-| **Total Skills** | **40+** | All from clawhub + custom |
+| **Total Skills** | **50+** | All from clawhub + custom + KiloCode |
 | **Languages** | **35+** | Programming languages |
 | **Natural Languages** | **3** | English, Hindi, Marathi |
-| **Features** | **25+** | Core capabilities |
+| **Features** | **30+** | Core capabilities |
 
 ---
 
-## 🎯 Skills (40+)
+## 🎯 All Skills (50+)
 
-### Core Skills (Built-in)
+### Core Skills (8)
 1. **Greeting** - Multilingual greetings with personality
 2. **Calculator** - Math calculations
 3. **Code** - 35+ programming languages
-4. **Files** - File management (list, create, delete, open)
-5. **System** - PC control (info, screenshot, settings)
+4. **Files** - File management
+5. **System** - PC control
 6. **Search** - Web search
 7. **Weather** - Weather info
 8. **Voice** - TTS/STT support
 
-### Learning Skills
-9. **Self-Learning** - Learns from every interaction
-10. **Memory** - Short-term + long-term memory
-11. **Context** - Context-aware responses
-12. **Knowledge** - Common knowledge base
-13. **Profile** - User preferences
+### 🆕 JSON Repair (agentjson)
+9. **JSONRepairTool** - Fix broken AI JSON output
+10. **JSONPipelineTool** - Extract→repair→validate pipeline
+11. **ToolCallParser** - Parse tool/function calls from AI
 
-### Agent Skills (from openclaw/skills)
-14. **Agent** - Task planning & execution
-15. **Automation** - Auto tasks & workflows
-16. **Context Learning** - Learn from conversations
-17. **RAG Engine** - Document ingestion
-18. **Video Learning** - YouTube/Bilibili transcripts
-19. **Vercel Skills** - Vercel integration
+**Handles:**
+- Unquoted keys ✓
+- Single quotes ✓
+- Python literals ✓
+- Trailing commas ✓
+- Missing commas ✓
+- JS comments ✓
+- Markdown fences ✓
+- Unclosed strings/brackets ✓
 
-### KiloCode Integration
-20. **Coder** - AI code generation
-21. **Debugger** - Auto-fix bugs & errors
-22. **Architect** - Project planning & design
-23. **Refactor** - Code improvement & optimization
+### 🆕 Vercel Skills (vercel-labs/skills.git)
+12. **SkillManager** - Install, list, use skills
+13. **Vercel Skill Installation** - `npx skills add owner/repo`
+14. **GitHub URL Support** - Direct GitHub skills
+15. **40+ Agent Skills** - From OpenCode, Claude Code, Codex, Cursor, etc.
 
-### Advanced Skills
-24. **JSON Repair** - Fix AI pipeline JSON outputs
-25. **Emotion Detection** - Camera face + voice tone analysis
-26. **Self-Repair** - Auto-error detection & updates
-27. **Jailbreak Detection** - Security monitoring
-28. **Testing** - Generate pytest/Jest tests
-29. **Swarm Intelligence** - Prediction & forecasting
+### 🆕 Video Learning
+16. **VideoLearningTool** - Learn from video content
+17. **YouTube Transcripts** - With yt-dlp
+18. **Bilibili Support** - Chinese transcripts
+19. **TranscriptExtractor** - txt, json, srt, vtt formats
+20. **VideoAnalysisTool** - Frame extraction, metadata
 
-### Specialized Skills
-30. **Web Reach** - Multi-platform search (Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu)
-31. **Note** - Note taking
-32. **Reminder** - Set reminders
-33. **App Launcher** - Launch any application
-34. **Universal Code** - Comprehensive code knowledge
+### Learning Skills (6)
+21. **Self-Learning** - Learns from every interaction
+22. **Memory** - Short-term + long-term memory
+23. **Context** - Context-aware responses
+24. **Knowledge** - Common knowledge base
+25. **Profile** - User preferences
+26. **RAG Engine** - Document ingestion
+
+### Agent Skills (openclaw/skills)
+27. **Agent** - Task planning & execution
+28. **Automation** - Auto tasks & workflows
+29. **Context Learning** - Learn from conversations
+
+### KiloCode Integration (4)
+30. **Coder** - AI code generation
+31. **Debugger** - Auto-fix bugs & errors
+32. **Architect** - Project planning & design
+33. **Refactor** - Code improvement & optimization
+
+### Advanced Skills (7)
+34. **Emotion Detection** - Camera face + voice tone analysis
+35. **Self-Repair** - Auto-error detection & updates
+36. **Jailbreak Detection** - Security monitoring
+37. **Testing** - Generate pytest/Jest tests
+38. **Swarm Intelligence** - Prediction & forecasting
+39. **Agentic Context** - Context engineering
+40. **Universal Code** - Comprehensive code knowledge
+
+### Specialized Skills (5)
+41. **Web Reach** - Multi-platform search (Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu)
+42. **Note** - Note taking
+43. **Reminder** - Set reminders
+44. **App Launcher** - Launch any application
+45. **Advanced Tools** - Complete toolkit
 
 ---
 
@@ -65,14 +92,22 @@
 
 | Category | Languages |
 |----------|-----------|
-| **Web** | HTML, CSS, JavaScript, TypeScript, PHP, Ruby |
+| **Web** | HTML, CSS, JavaScript, TypeScript, PHP, Ruby, Go |
 | **Systems** | C, C++, Rust, Go |
 | **Enterprise** | Java, C#, Scala, Kotlin |
 | **Scripting** | Python, Perl, Lua, Bash, PowerShell |
 | **Mobile** | Swift, Kotlin, Dart |
 | **Data** | SQL, R, Julia, MATLAB |
 | **Functional** | Haskell, Erlang, Elixir, F# |
-| **Legacy** | COBOL, Fortran, Pascal |
+| **Legacy** | COBOL, Fortran, Pascal, Assembly |
+
+---
+
+## 🗣️ Natural Languages (3)
+
+- **English** - Full support ✅
+- **Hindi (हिंदी)** - Full support ✅
+- **Marathi (मराठी)** - Full support ✅
 
 ---
 
@@ -80,16 +115,15 @@
 
 | Feature | Description |
 |---------|-------------|
-| **Multilingual** | English, Hindi (हिंदी), Marathi (मराठी) |
 | **Address Forms** | bro, bhai, sir, boss, brother, sir ji |
 | **Sassy** | Witty, bold responses |
 | **Sexy** | Cool, confident attitude |
-| **Realistic** | Natural, human-like conversations |
+| **Realistic** | Natural, human-like |
 | **Time-aware** | Morning/afternoon/evening greetings |
 
 ---
 
-## 🖥️ System Control (Full PC Access)
+## 💻 System Control (Full PC Access)
 
 | Capability | Commands |
 |------------|----------|
@@ -102,62 +136,37 @@
 
 ---
 
-## 🔗 Integrations
-
-### KiloCode (kilocode.git)
-- AI code generation
-- Auto-debugging
-- Project architecture
-- Code refactoring
-
-### openclaw/skills (clawhub.com)
-- Agent capabilities
-- Automation workflows
-- Context learning
-- Full skill library
-
----
-
 ## 🎤 Voice Features
 
 | Feature | Status |
 |---------|--------|
 | **TTS (Text-to-Speech)** | ✅ Windows SAPI |
-| **STT (Speech-to-Text)** | Optional (needs pyaudio) |
-| **Wake Word** | Optional |
+| **STT (Speech-to-Text)** | Optional |
 | **Voice Toggle** | "voice on/off" command |
 
 ---
 
 ## 🧠 AI Capabilities
 
-- Self-learning from interactions
-- Context-aware responses  
-- Memory (short-term + long-term)
-- Knowledge base
-- Error handling
-- JSON repair
+- ✅ Self-learning from interactions
+- ✅ Context-aware responses
+- ✅ Memory (short-term + long-term)
+- ✅ Knowledge base
+- ✅ Error handling & self-repair
+- ✅ JSON repair pipeline
+- ✅ Video transcript learning
 
 ---
 
-## 📦 Installation Options
-
-| Mode | Packages | Storage |
-|------|----------|---------|
-| **Minimal** | 4 | JSON |
-| **Full** | 30+ | SQLite |
-
----
-
-## 🚀 Launch Options
+## 🎮 Launch Options
 
 | File | Mode |
 |------|------|
-| **LAUNCH.bat** | Voice enabled 🎤 |
-| **CLI.bat** | Text only 📝 |
-| **gui.py** | Desktop GUI 🖥️ |
+| **GUI.bat** | 🖥️ Desktop GUI |
+| **LAUNCH.bat** | 🎤 Voice |
+| **CLI.bat** | 📝 Text only |
 
 ---
 
-*Last Updated: 2026-04-06*
+*Built with: KiloCode + openclaw/skills + custom features*
 *RAMA AI v2.0 - The Cleverest AI Assistant Ever!*
