@@ -1,0 +1,10 @@
+{
+  "user_name": "bhai",
+  "language": "en",
+  "wake_word": "hey rama",
+  "voice_enabled": true,
+  "preferences": {
+    "greeting_style": "sassy",
+    "response_length": "medium"
+  }
+}
