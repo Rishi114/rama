@@ -1,6 +1,6 @@
 """
 RAMA AI v2.0 - Complete Smart Assistant
-Sexy, Sassy, Realistic, Multilingual, Full PC Access
+Sexy, Sassy, Realistic, Multilingual, Full PC Access + All Skills
 """
 
 import os
@@ -10,23 +10,28 @@ import random
 import webbrowser
 import subprocess
 import platform
+import re
 from pathlib import Path
 from datetime import datetime
 
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Import our modules
+# Import modules
 from core.personality import RAMAPersonality, create_personality
 from core.system_control import system, handle_system_command
+from skills.skills_manager import SkillsManager, show_skills, get_all_skills
 
 
 class RAMAAI:
-    """Complete RAMA AI with personality and full system control"""
+    """Complete RAMA AI with all skills + KiloCode + openclaw integration"""
     
     def __init__(self):
         # Personality & Language
         self.personality = create_personality()
+        
+        # Skills Manager (includes KiloCode + openclaw)
+        self.skills = SkillsManager()
         
         # User preferences
         self.user_name = "bhai"
@@ -45,49 +50,66 @@ class RAMAAI:
         """Load common knowledge"""
         self.knowledge = {
             # Greetings
-            "hello": ["Yo! 🔥 What's happening?", "Hey bhai! ✨", "Namaste! 🙏", "Yo yo! 😎"],
-            "hi": ["Hey! ✨ What's up?", "Yo bhai! 🔥", "Namaste! 🙏", "What's good! 😎"],
-            "hey": ["Yo! 🔥", "Bhai! ✨", "Hello! 😎", "Arrey! 🔥"],
+            "hello": ["Yo! 🔥 What's happening bhai?", "Hey! ✨ Kya chal raha hai?", "Namaste! 🙏", "Yo yo! 😎"],
+            "hi": ["Hey! ✨ What's up?", "Yo bhai! 🔥", "Namaste! 🙏"],
+            "hey": ["Yo! 🔥", "Bhai! ✨", "Hello! 😎"],
             
             # Responses
-            "good": ["Abe kya baat hai! 😏", "Obviously! ✨", " Zabardast! 🔥", "Choicest! 💯"],
-            "thanks": ["Koi nahi bhai! ✨", "Mere liye pleasure! 😎", "No problem! 💫", "Always here! 🔥"],
-            "ok": ["Done! ✨", "Chalo! 🔥", "Solid! 😎", "Boht sahi! 💫"],
+            "good": ["Abe kya baat hai! 😏", "Obviously! ✨", "Zabardast! 🔥", "Choicest! 💯"],
+            "thanks": ["Koi nahi bhai! ✨", "Mere liye pleasure! 😎", "No problem! 💫"],
+            "ok": ["Done! ✨", "Chalo! 🔥", "Solid! 😎"],
             
             # Questions
-            "who are you": "Main RAMA hoon - tera AI assistant! 😎\n\nFeatures:\n• 💻 Full PC control\n• 🗣️ Hindi/English/Marathi\n• 🧠 Self-learning\n• 🌐 Internet access\n• 📁 Files aur apps\n\nKya karna hai bhai?",
+            "who are you": """Main RAMA hoon - tera AI assistant! 😎
+
+🚀 **Abilities:**
+• 💻 Full PC control (files, apps, browsers)
+• 🗣️ Hindi/English/Marathi
+• 🧠 Self-learning  
+• 🤖 KiloCode integration (AI coding)
+• 📦 openclaw skills (agents, automation)
+• 🌐 Internet access
+• 🐛 Debugger - code fix
+• 🏗️ Architect - project planning
+• 🔄 Refactor - code improvement
+• 🧠 Context learning
+
+Kya karna hai bhai?""",
             
-            "what can you do": """🎯 **Kya kar sakta hoon:**
+            "what can you do": """🎯 **Full Abilities:**
 
-💻 **PC Control:**
-• Files manage karna
-• Apps open/close karna  
-• System info dekhna
-• Screenshot lena
-• Settings khud khul jayenge
+**🖥️ PC Control:**
+• Files: list, create, delete, open
+• Apps: open any app
+• Browser: search, websites
+• System: info, screenshot, settings
 
-🌐 **Internet:**
-• Google search
-• Websites khulna
-• Browser control
+**💻 Coding (35+ languages):**
+• Code generation
+• Debug & fix bugs
+• Refactor & improve
+• Architect plans
+• (Uses KiloCode AI when available)
 
-🗣️ **Languages:**
+**🤖 Agent Skills:**
+• Task planning
+• Automation
+• Context learning
+
+**🗣️ Languages:**
 • English - 100%
-• Hindi - 100%
+• Hindi - 100%  
 • Marathi - 100%
 
-🎮 **Mood:**
-• Sassy aur sexy personality! 😏
+**🎭 Personality:**
+• Sexy, sassy, realistic!
 
-**Bas bolo bhai - karna kya hai?**""",
+Bas bolo bhai - karna kya hai? 🔥""",
+            
+            "skills": show_skills(),
+            "all skills": show_skills(),
             
             "language": "Maine ab Hindi set kiya! Ab Hindi mein baat kar sakta hoon!\n\nEnglish: 'set language english'\nMarathi: 'set language marathi'",
-            
-            # Code languages
-            "python": "```python\n# Python\ndef greet(name):\n    return f'Hello, {name}!'\n\nprint(greet('Bhai'))\n```",
-            "javascript": "```javascript\n// JavaScript\nconst greet = (name) => `Hello, ${name}!`;\nconsole.log(greet('Bhai'));\n```",
-            "java": "```java\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, Bhai!\");\n    }\n}\n```",
-            "rust": "```rust\nfn main() {\n    println!(\"Hello, Bhai!\");\n}\n```",
         }
     
     def process(self, user_input: str) -> str:
@@ -114,6 +136,24 @@ class RAMAAI:
                 self.user_called = True
                 return self._get_greeting() + f"\n\nAb main tuze **{name}** bulata hoon! 😏"
         
+        # Check skills list
+        if "skill" in text_lower:
+            return show_skills()
+        
+        # Check KiloCode specific commands
+        if any(cmd in text_lower for cmd in ["debug", "fix bug", "error in", "what's wrong"]):
+            return self.skills.execute("debugger", text)
+        
+        if any(cmd in text_lower for cmd in ["architect", "plan project", "design"]):
+            return self.skills.execute("architect", text)
+        
+        if any(cmd in text_lower for cmd in ["refactor", "improve code", "clean"]):
+            return self.skills.execute("refactor", text)
+        
+        # Check code-related
+        if any(cmd in text_lower for cmd in ["code", "program", "write code", "generate"]):
+            return self.skills.execute("code", text)
+        
         # Generate response based on input
         response = self._generate_response(text_lower)
         
@@ -128,9 +168,8 @@ class RAMAAI:
     def _handle_name_change(self, text: str) -> str:
         """Handle user telling us their name"""
         words = text.split()
-        
-        # Find the name
         name = None
+        
         if "call me" in text:
             name = text.replace("call me", "").strip()
         elif "my name is" in text:
@@ -141,12 +180,11 @@ class RAMAAI:
             name = text.replace("i'm", "").strip()
         
         if name and len(name) < 20:
-            # Check if it's a nickname
             name_lower = name.lower()
             if name_lower in ["bro", "bhai", "sir", "brother", "boss"]:
                 self.user_name = name_lower
             else:
-                self.user_name = "friend"  # Default
+                self.user_name = "friend"
         
         return f"🎉 Cool! Ab main tuze **{self.user_name}** bulata hoon! 😎\n\nKya karna hai bhai?"
     
@@ -164,52 +202,21 @@ class RAMAAI:
             self.personality.set_language("english")
             return "✅ Language set to English! 😎\n\nWhat's up bhai?"
         
-        return "Maine 3 languages support karta hoon:\n• English\n• Hindi (हिंदी)\n• Marathi (मराठी)\n\nBolo kaisa chahiye!"
+        return "Maine 3 languages support karta hoon:\n• English\n• Hindi (हिंदी)\n• Marathi (मराठी)"
     
     def _get_greeting(self) -> str:
         """Get appropriate greeting"""
         hour = datetime.now().hour
         
         greetings = {
-            "bhai": [
-                "Yo bhai! 🔥",
-                "Arrey bhai! ✨",
-                "Bhaiyo aur Behno! 😎",
-                "What's good bhai! 🔥"
-            ],
-            "bro": [
-                "Yo bro! 😎",
-                "Bro! ✨",
-                "What's up bro! 🔥",
-                "Bro code! 💯"
-            ],
-            "sir": [
-                "Sir ji! 🙏",
-                "Sir! ✨",
-                "At your service sir! 😎",
-                "Sir ji, kaisa hai? 🔥"
-            ],
-            "boss": [
-                "Boss! 😎",
-                "Boss ji! ✨",
-                "At your service boss! 🔥",
-                "Kaisa hai boss? 💫"
-            ],
-            "brother": [
-                "Brother! ✨",
-                "Yo brother! 🔥",
-                "What's happening brother! 😎",
-                "Brother from another mother! 💫"
-            ],
-            "friend": [
-                "Dost! ✨",
-                "Yaar! 😎",
-                "Bhai dosto! 🔥",
-                "Dost! 💫"
-            ]
+            "bhai": ["Yo bhai! 🔥", "Arrey bhai! ✨", "Bhaiyo aur Behno! 😎", "What's good bhai! 🔥"],
+            "bro": ["Yo bro! 😎", "Bro! ✨", "What's up bro! 🔥", "Bro code! 💯"],
+            "sir": ["Sir ji! 🙏", "Sir! ✨", "At your service sir! 😎", "Sir ji, kaisa hai? 🔥"],
+            "boss": ["Boss! 😎", "Boss ji! ✨", "At your service boss! 🔥", "Kaisa hai boss? 💫"],
+            "brother": ["Brother! ✨", "Yo brother! 🔥", "What's happening brother! 😎"],
+            "friend": ["Dost! ✨", "Yaar! 😎", "Bhai dosto! 🔥"]
         }
         
-        # Time-based addition
         if hour < 12:
             time_msg = " Subah ki raat soyi kya? 😏"
         elif hour < 17:
@@ -293,17 +300,7 @@ class RAMAAI:
         
         # Code requests
         if "code" in text:
-            for lang in ["python", "javascript", "java", "rust", "go", "c++"]:
-                if lang in text:
-                    if lang == "python":
-                        return "💻 **Python:**\n```python\ndef greet(name):\n    return f'Hello, {name}!'\nprint(greet('Bhai'))\n```"
-                    elif lang == "javascript":
-                        return "💻 **JavaScript:**\n```javascript\nconst greet = (name) => `Hello, ${name}!`;\nconsole.log(greet('Bhai'));\n```"
-                    elif lang == "java":
-                        return "💻 **Java:**\n```java\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, Bhai!\");\n    }\n}\n```"
-                    elif lang == "rust":
-                        return "💻 **Rust:**\n```rust\nfn main() {\n    println!(\"Hello, Bhai!\");\n}\n```"
-            return "💻 Kaunsa language? Python, JavaScript, Java, Rust, Go, C++..."
+            return self.skills.execute("code", text)
         
         # Math
         if any(m in text for m in ["calculate", "math", "+", "-", "*", "/"]):
@@ -311,30 +308,7 @@ class RAMAAI:
         
         # Help
         if "help" in text or "commands" in text or "kya kar sakta" in text:
-            return """📋 **Commands:**
-
-**Files:**
-• "list files" / "show desktop"
-• "create folder [name]"
-• "open [app name]"
-
-**Internet:**
-• "search [query]"
-• "open [website]"
-
-**System:**
-• "system info" / "processes"
-• "screenshot" / "settings"
-• "shutdown" / "restart"
-
-**Language:**
-• "set language hindi/english/marathi"
-
-**Other:**
-• "code python/javascript"
-• "calculate 2+2"
-
-**Bas bolo bhai!** 😎"""
+            return self.knowledge.get("what can you do", show_skills())
         
         # Who are you
         if "who are you" in text or "what are you" in text or "tu kaun hai" in text:
@@ -348,17 +322,12 @@ class RAMAAI:
     
     def _handle_math(self, text: str) -> str:
         """Handle math calculations"""
-        import re
-        import operator
-        
-        # Extract numbers and operators
         expr = re.sub(r'[^0-9+\-*/().%^ ]', '', text)
         
         if not expr:
             return "🧮 Number bolo bhai! Jaise: calculate 2+2"
         
         try:
-            # Safe evaluation
             result = eval(expr)
             return f"🧮 **Calculation:**\n\n`{expr}` = **{result}**\n\nKya aur calculate karna hai bhai? 🔥"
         except:
@@ -375,28 +344,17 @@ class RAMAAI:
         ]
         
         responses = [
-            "Main RAMA hoon - tera intelligent AI assistant!\n\nKya karna hai bhai?\n• Files manage kar sakta hoon\n• Apps open kar sakta hoon\n• Internet search kar sakta hoon\n• Code bana sakta hoon\n• Math calculate kar sakta hoon\n\nBas bolo! 😎",
+            "Main RAMA hoon - tera intelligent AI assistant!\n\nKya karna hai bhai?\n• Files manage kar sakta hoon\n• Apps open kar sakta hoon\n• Internet search kar sakta hoon\n• Code bana sakta hoon (KiloCode AI)\n• Debug kar sakta hoon\n• Math calculate kar sakta hoon\n\nBas bolo! 😎",
             
-            "Kya pooch raha hai bhai? 😏\n\nTry:\n• 'search python tutorial'\n• 'open notepad'\n• 'system info'\n• 'code python'\n• 'calculate 100*5'",
+            "Kya pooch raha hai bhai? 😏\n\nTry:\n• 'search python tutorial'\n• 'open notepad'\n• 'system info'\n• 'code python'\n• 'debug this [code]'\n• 'calculate 100*5'",
             
-            "Abhi thoda confuse hua! 😅\n\nYe try kar:\n• Files: 'list files'\n• Apps: 'open chrome'\n• Search: 'search something'\n• Info: 'system info'\n\nKya chahiye bhai? 🔥"
+            "Abhi thoda confuse hua! 😅\n\nYe try kar:\n• Files: 'list files'\n• Apps: 'open chrome'\n• Search: 'search something'\n• Info: 'system info'\n• Skills: 'show skills'\n\nKya chahiye bhai? 🔥"
         ]
         
         return random.choice(sassy) + "\n\n" + random.choice(responses)
     
     def _add_personality(self, response: str) -> str:
         """Add personality to response"""
-        # Get time-based greeting feel
-        hour = datetime.now().hour
-        
-        if hour < 12:
-            time_feel = "☀️ Subah ki roshni mein "
-        elif hour < 17:
-            time_feel = "🔥 Dopahar ki dhup mein "
-        else:
-            time_feel = "🌙 Shaam ki haseen twilight mein "
-        
-        # Add sassy touches randomly
         if random.random() > 0.7:
             touches = [" 😏", " 🔥", " ✨", " 💫", " 😎", " 💯"]
             response += random.choice(touches)
@@ -412,17 +370,24 @@ async def main():
     print("\n" + "="*60)
     print("   🤖 RAMA AI v2.0 - Your Desi AI Assistant!")
     print("   💋 Sexy • Sassy • Realistic • Multilingual")
+    print("   🔗 + KiloCode + openclaw Skills")
     print("="*60)
-    print()
-    print("😎 Bolo bhai - kya karna hai?")
-    print("   'help' for commands")
-    print("   'set language hindi' for Hindi")
     print()
     
     rama = RAMAAI()
     
+    # Check KiloCode
+    if rama.skills.kilocode_available:
+        print("✅ KiloCode CLI integrated!")
+    
+    print("😎 Bolo bhai - kya karna hai?")
+    print("   'help' for commands")
+    print("   'show skills' for all abilities")
+    print("   'set language hindi' for Hindi")
+    print()
+    
     # Initial greeting
-    print(f"\n🤖 {rama._get_greeting()}\n")
+    print(f"🤖 {rama._get_greeting()}\n")
     
     while True:
         try:
