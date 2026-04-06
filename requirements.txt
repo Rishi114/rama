@@ -23,11 +23,12 @@ pydantic>=2.0.0         # Data validation
 pyyaml>=6.0             # Config files
 
 # ============================================
-# OPTIONAL - FOR ADVANCED FEATURES
+# OPTIONAL - PHYSICS & AI TRAINING
 # ============================================
-# pytesseract>=0.3.10   # OCR (optional)
-# opencv-python>=4.8.0  # Computer vision (optional)
+# the_well>=1.0.0        # Physics datasets (15TB, optional)
 # torch>=2.0.0          # AI/ML (optional, 16GB+ RAM)
 # transformers>=4.30.0  # NLP (optional)
+# numpy>=1.24.0          # For data processing
+# pytorch-lightning>=2.0.0  # Model training
 
 # Install: pip install -r requirements.txt

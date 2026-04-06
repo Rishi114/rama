@@ -50,8 +50,12 @@ class RAMAModel:
             from text_to_speech import TextToSpeech
             from speech_to_text import SpeechToText
             from skills import SkillsManager
+            from brain_trainer import BrainTrainer
             
-            # Initialize skills first (has all features)
+            # Initialize brain trainer first (has all features)
+            self.brain_trainer = BrainTrainer(self.config)
+            
+            # Initialize skills
             self.skills = SkillsManager({
                 'user_name': self.user_name,
                 'language': self.language
@@ -65,7 +69,7 @@ class RAMAModel:
             self.tts = TextToSpeech(self.config)
             self.stt = SpeechToText(self.config)
             
-            print("✅ RAMA Brain with ALL features initialized!")
+            print("✅ RAMA Brain with Training & Physics initialized!")
             return True
             
         except Exception as e:
@@ -267,6 +271,10 @@ class RAMAModel:
         if 'voice' in text:
             return self.skills.skill_voice(text)
         
+        # Brain Training
+        if any(w in text for w in ['brain status', 'brain info', 'train brain', 'save brain', 'load brain', 'reset brain', 'physics data', 'the well']):
+            return self._handle_brain_training(text)
+        
         # Personality
         if any(w in text for w in ['personality', 'language', 'hindi', 'marathi']):
             return self.skills.skill_personality(text)
@@ -404,7 +412,31 @@ Bol kya karna hai bhai! 😎🔥"""
         return random.choice(sassy) + "\n\n" + random.choice(responses)
     
     def _quick_commands(self):
-        return "Quick: open app, search, code, math, files, system, help, remember X is Y"
+        return "Quick: open app, search, code, math, files, system, help, remember X is Y, brain status"
+    
+    def _handle_brain_training(self, text):
+        """Handle brain training commands"""
+        text_lower = text.lower()
+        
+        if "brain status" in text_lower or "brain info" in text_lower:
+            return self.brain_trainer.get_brain_status()
+        
+        if "physics" in text_lower or "the well" in text_lower:
+            return self.brain_trainer.load_physics_data()
+        
+        if "save brain" in text_lower:
+            return self.brain_trainer.save_brain()
+        
+        if "load brain" in text_lower:
+            return self.brain_trainer.load_brain()
+        
+        if "reset brain" in text_lower:
+            return self.brain_trainer.reset_brain()
+        
+        if "train" in text_lower:
+            return self.brain_trainer.learn(text, "")
+        
+        return self.brain_trainer.get_brain_status()
     
     def _get_sassy_response(self, default):
         """Get sassy default response"""
