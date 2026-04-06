@@ -9,8 +9,14 @@ from .god_mode import (
     GodModeTool,
     AutomationTool,
     MemoryTool,
-    ToolManager
+    ToolManager,
 )
+
+# JSON Repair Tools (based on agentjson)
+from .json_tools import JSONRepairTool, JSONPipelineTool, ToolCallParser
+
+# Video Learning Tools
+from .video_tools import VideoLearningTool, TranscriptExtractor, VideoAnalysisTool
 
 __all__ = [
     'WebSearchTool',
@@ -21,4 +27,10 @@ __all__ = [
     'AutomationTool',
     'MemoryTool',
     'ToolManager',
+    'JSONRepairTool',
+    'JSONPipelineTool',
+    'ToolCallParser',
+    'VideoLearningTool',
+    'TranscriptExtractor',
+    'VideoAnalysisTool',
 ]

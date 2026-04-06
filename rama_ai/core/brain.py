@@ -169,6 +169,9 @@ class SkillManager:
             CriticalThinkingSkill, CodeAnalysisSkill, SystemInfoSkill as GodModeSystemInfo,
             AutomationSkill as AdvancedAutomation, MemorySkill
         )
+        from skills.json_tools import JSONRepairSkill, PipelineSkill, ToolCallSkill
+        from skills.video_tools import VideoLearningSkill, TranscriptSkill
+        from skills.vercel_skills import VerceilSkillsSkill
         
         skills = [
             # Core skills
@@ -193,6 +196,15 @@ class SkillManager:
             GodModeSystemInfo(),
             AdvancedAutomation(),
             MemorySkill(),
+            # JSON Repair
+            JSONRepairSkill(),
+            PipelineSkill(),
+            ToolCallSkill(),
+            # Video Learning
+            VideoLearningSkill(),
+            TranscriptSkill(),
+            # Vercel Skills
+            VerceilSkillsSkill(),
         ]
         
         for skill in skills:
