@@ -1,42 +1,40 @@
 @echo off
-REM RAMA AI - Simple Launcher
-REM Just double-click this to run!
+REM RAMA AI - Voice Launcher (Double-click for voice mode!)
+cd /d "%~dp0"
 
 echo.
-echo 🤖 Starting RAMA AI...
+echo 🤖 Starting RAMA AI with Voice...
 echo.
 
 REM Try py launcher first (Windows built-in)
 py --version >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ Found Python via py launcher
-    py main.py
+    echo ✅ Using py launcher with voice
+    py main.py --voice
     goto :end
 )
 
 REM Try python
 python --version >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ Found Python
-    python main.py
+    echo ✅ Using python with voice
+    python main.py --voice
     goto :end
 )
 
 REM Try python3
 python3 --version >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ Found Python3
-    python3 main.py
+    echo ✅ Using python3 with voice
+    python3 main.py --voice
     goto :end
 )
 
 echo.
-echo ❌ Python not found!
+echo ❌ Python not installed!
 echo.
-echo Please install Python from:
-echo https://www.python.org/downloads/
-echo.
-echo Make sure to check "Add Python to PATH"
+echo Download from: https://www.python.org/downloads/
+echo IMPORTANT: Check "Add Python to PATH"
 echo.
 pause
 

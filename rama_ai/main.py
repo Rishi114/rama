@@ -367,12 +367,25 @@ Bas bolo bhai - karna kya hai? 🔥""",
 # ============================================
 
 async def main():
+    # Check for voice mode
+    voice_mode = "--voice" in sys.argv
+    
     print("\n" + "="*60)
     print("   🤖 RAMA AI v2.0 - Your Desi AI Assistant!")
     print("   💋 Sexy • Sassy • Realistic • Multilingual")
-    print("   🔗 + KiloCode + openclaw Skills")
+    print("   🔗 + KiloCode + openclaw Skills + Voice")
     print("="*60)
     print()
+    
+    # Initialize voice if requested
+    voice = None
+    if voice_mode:
+        try:
+            from core.voice import SimpleTTS, VoicePipeline
+            voice = VoicePipeline()
+            print("🎤 Voice mode enabled!")
+        except Exception as e:
+            print(f"⚠️ Voice init failed: {e}")
     
     rama = RAMAAI()
     
@@ -380,14 +393,19 @@ async def main():
     if rama.skills.kilocode_available:
         print("✅ KiloCode CLI integrated!")
     
+    # Show greeting
+    greeting = rama._get_greeting()
+    print(f"🤖 {greeting}\n")
+    
+    # Speak greeting if voice available
+    if voice and voice.tts_available:
+        voice.speak(greeting)
+    
     print("😎 Bolo bhai - kya karna hai?")
     print("   'help' for commands")
-    print("   'show skills' for all abilities")
+    print("   'voice on' to enable voice")
     print("   'set language hindi' for Hindi")
     print()
-    
-    # Initial greeting
-    print(f"🤖 {rama._get_greeting()}\n")
     
     while True:
         try:
@@ -396,13 +414,35 @@ async def main():
             if not user_input:
                 continue
             
+            # Check for voice toggle
+            if user_input.lower() == "voice on":
+                if voice:
+                    voice.start_voice_mode()
+                    print("🎤 Voice listening enabled! Say 'Rama' to wake")
+                continue
+            
+            if user_input.lower() == "voice off":
+                if voice:
+                    voice.stop_voice_mode()
+                    print("🔇 Voice mode disabled")
+                continue
+            
             if user_input.lower() in ['exit', 'quit', 'bye', 'chal']:
                 print("\n👋 Alvida bhai! Phir milenge! ✨")
+                if voice and voice.tts_available:
+                    voice.speak("Alvida bhai! Phir milenge!", blocking=True)
                 break
             
             # Get response
             response = rama.process(user_input)
             print(f"\n🤖 Rama: {response}\n")
+            
+            # Speak response if voice enabled
+            if voice and voice.tts_available:
+                # Extract plain text without markdown
+                import re
+                plain = re.sub(r'[*#`]', '', response)
+                voice.speak(plain)
             
         except KeyboardInterrupt:
             print("\n👋 Bye bhai!")
@@ -416,7 +456,8 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description="RAMA AI v2.0")
     parser.add_argument("--cli", action="store_true", help="Run in CLI mode")
+    parser.add_argument("--voice", action="store_true", help="Enable voice mode")
     args = parser.parse_args()
     
-    if args.cli or len(sys.argv) == 1:
+    if args.cli or args.voice or len(sys.argv) == 1:
         asyncio.run(main())
