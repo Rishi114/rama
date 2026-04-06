@@ -1,309 +1,449 @@
 """
-RAMA AI v2.0 - Main Entry Point
-Enhanced version with smarter AI
+RAMA AI v2.0 - Complete Smart Assistant
+Sexy, Sassy, Realistic, Multilingual, Full PC Access
 """
 
-import asyncio
-import sys
 import os
+import sys
+import asyncio
 import random
+import webbrowser
+import subprocess
+import platform
+from pathlib import Path
+from datetime import datetime
 
+# Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-
-def check_dependencies():
-    """Check available dependencies"""
-    available = {}
-    
-    try:
-        import customtkinter
-        available['ui'] = True
-    except:
-        available['ui'] = False
-    
-    try:
-        import aiohttp
-        available['aiohttp'] = True
-    except:
-        available['aiohttp'] = False
-    
-    try:
-        import requests
-        available['requests'] = True
-    except:
-        available['requests'] = False
-    
-    try:
-        import psutil
-        available['psutil'] = True
-    except:
-        available['psutil'] = False
-    
-    return available
+# Import our modules
+from core.personality import RAMAPersonality, create_personality
+from core.system_control import system, handle_system_command
 
 
-# Smart response generator for CLI mode
-class SmartRama:
-    """Enhanced AI responses"""
+class RAMAAI:
+    """Complete RAMA AI with personality and full system control"""
     
     def __init__(self):
-        self.name = "RAMA"
-        self.version = "2.0"
-        self.knowledge = self._load_knowledge()
+        # Personality & Language
+        self.personality = create_personality()
+        
+        # User preferences
+        self.user_name = "bhai"
+        self.user_called = False
+        
+        # Knowledge base
+        self.knowledge = {}
+        
+        # Conversation history
+        self.history = []
+        
+        # Load knowledge
+        self._load_knowledge()
         
     def _load_knowledge(self):
-        return {
-            "greetings": [
-                "Well, well... look who's awake! 👀",
-                "Hey there, superstar! ✨",
-                "Yo! Ready to rock? 🚀",
-                "Hello, human! 😄 What can I do for you?",
-                "Ah, our paths cross again! 🌟",
-            ],
-            "thoughtful": [
-                "💭 Let me think about that...",
-                "🤔 Interesting question...",
-                "✨ Great thinking!",
-                "🌟 You've got my attention!",
-                "💡 Here's my take...",
-            ],
-            "code_languages": {
-                "python": "```python\n# Python\ndef greet(name):\n    return f'Hello, {name}!'\nprint(greet('World'))\n```",
-                "javascript": "```javascript\n// JavaScript\nconst greet = (name) => `Hello, ${name}!`;\nconsole.log(greet('World'));\n```",
-                "rust": "```rust\n// Rust\nfn main() {\n    println!(\"Hello, World!\");\n}\n```",
-                "go": "```go\n// Go\npackage main\nimport \"fmt\"\nfunc main() { fmt.Println(\"Hello, World!\") }\n```",
-                "java": "```java\n// Java\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}\n```",
-            }
+        """Load common knowledge"""
+        self.knowledge = {
+            # Greetings
+            "hello": ["Yo! 🔥 What's happening?", "Hey bhai! ✨", "Namaste! 🙏", "Yo yo! 😎"],
+            "hi": ["Hey! ✨ What's up?", "Yo bhai! 🔥", "Namaste! 🙏", "What's good! 😎"],
+            "hey": ["Yo! 🔥", "Bhai! ✨", "Hello! 😎", "Arrey! 🔥"],
+            
+            # Responses
+            "good": ["Abe kya baat hai! 😏", "Obviously! ✨", " Zabardast! 🔥", "Choicest! 💯"],
+            "thanks": ["Koi nahi bhai! ✨", "Mere liye pleasure! 😎", "No problem! 💫", "Always here! 🔥"],
+            "ok": ["Done! ✨", "Chalo! 🔥", "Solid! 😎", "Boht sahi! 💫"],
+            
+            # Questions
+            "who are you": "Main RAMA hoon - tera AI assistant! 😎\n\nFeatures:\n• 💻 Full PC control\n• 🗣️ Hindi/English/Marathi\n• 🧠 Self-learning\n• 🌐 Internet access\n• 📁 Files aur apps\n\nKya karna hai bhai?",
+            
+            "what can you do": """🎯 **Kya kar sakta hoon:**
+
+💻 **PC Control:**
+• Files manage karna
+• Apps open/close karna  
+• System info dekhna
+• Screenshot lena
+• Settings khud khul jayenge
+
+🌐 **Internet:**
+• Google search
+• Websites khulna
+• Browser control
+
+🗣️ **Languages:**
+• English - 100%
+• Hindi - 100%
+• Marathi - 100%
+
+🎮 **Mood:**
+• Sassy aur sexy personality! 😏
+
+**Bas bolo bhai - karna kya hai?**""",
+            
+            "language": "Maine ab Hindi set kiya! Ab Hindi mein baat kar sakta hoon!\n\nEnglish: 'set language english'\nMarathi: 'set language marathi'",
+            
+            # Code languages
+            "python": "```python\n# Python\ndef greet(name):\n    return f'Hello, {name}!'\n\nprint(greet('Bhai'))\n```",
+            "javascript": "```javascript\n// JavaScript\nconst greet = (name) => `Hello, ${name}!`;\nconsole.log(greet('Bhai'));\n```",
+            "java": "```java\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, Bhai!\");\n    }\n}\n```",
+            "rust": "```rust\nfn main() {\n    println!(\"Hello, Bhai!\");\n}\n```",
         }
     
     def process(self, user_input: str) -> str:
-        """Process input and generate smart response"""
-        text = user_input.lower().strip()
+        """Process input and generate response"""
+        text = user_input.strip()
+        text_lower = text.lower()
         
-        # Greetings
-        if any(g in text for g in ["hello", "hi", "hey", "yo"]):
-            return random.choice(self.knowledge["greetings"])
+        # Record in history
+        self.history.append({"role": "user", "content": text})
         
-        # Help
-        if "help" in text or "what can" in text:
-            return self._get_help()
+        # Check if user telling us their name
+        if any(phrase in text_lower for phrase in ["call me", "my name is", "i am", "i'm"]):
+            return self._handle_name_change(text_lower)
         
-        # List skills/capabilities
-        if any(s in text for s in ["list skills", "what do you know", "capabilities"]):
-            return self._get_capabilities()
+        # Check language change
+        if "language" in text_lower or "set language" in text_lower:
+            return self._handle_language_change(text_lower)
         
-        # List languages
-        if "languages" in text or "programming" in text:
-            return "💻 I know 35+ programming languages! Ask like 'code python' or 'show javascript'"
+        # Check for name preferences
+        name_options = ["bro", "bhai", "sir", "brother", "sir ji", "boss"]
+        for name in name_options:
+            if name in text_lower:
+                self.user_name = name
+                self.user_called = True
+                return self._get_greeting() + f"\n\nAb main tuze **{name}** bulata hoon! 😏"
         
-        # Code examples
+        # Generate response based on input
+        response = self._generate_response(text_lower)
+        
+        # Add personality
+        response = self._add_personality(response)
+        
+        # Record assistant response
+        self.history.append({"role": "assistant", "content": response})
+        
+        return response
+    
+    def _handle_name_change(self, text: str) -> str:
+        """Handle user telling us their name"""
+        words = text.split()
+        
+        # Find the name
+        name = None
+        if "call me" in text:
+            name = text.replace("call me", "").strip()
+        elif "my name is" in text:
+            name = text.replace("my name is", "").strip()
+        elif "i am" in text:
+            name = text.replace("i am", "").strip()
+        elif "i'm" in text:
+            name = text.replace("i'm", "").strip()
+        
+        if name and len(name) < 20:
+            # Check if it's a nickname
+            name_lower = name.lower()
+            if name_lower in ["bro", "bhai", "sir", "brother", "boss"]:
+                self.user_name = name_lower
+            else:
+                self.user_name = "friend"  # Default
+        
+        return f"🎉 Cool! Ab main tuze **{self.user_name}** bulata hoon! 😎\n\nKya karna hai bhai?"
+    
+    def _handle_language_change(self, text: str) -> str:
+        """Handle language change"""
+        if "hindi" in text:
+            self.personality.set_language("hindi")
+            return "✅ Done! Ab main Hindi mein baat karunga! 🇮🇳\n\nKya karna hai bhai?"
+        
+        if "marathi" in text:
+            self.personality.set_language("marathi")
+            return "✅ Done! Ab main Marathi mein bolun! 🇮🇳\n\nKai karayche bhai?"
+        
+        if "english" in text:
+            self.personality.set_language("english")
+            return "✅ Language set to English! 😎\n\nWhat's up bhai?"
+        
+        return "Maine 3 languages support karta hoon:\n• English\n• Hindi (हिंदी)\n• Marathi (मराठी)\n\nBolo kaisa chahiye!"
+    
+    def _get_greeting(self) -> str:
+        """Get appropriate greeting"""
+        hour = datetime.now().hour
+        
+        greetings = {
+            "bhai": [
+                "Yo bhai! 🔥",
+                "Arrey bhai! ✨",
+                "Bhaiyo aur Behno! 😎",
+                "What's good bhai! 🔥"
+            ],
+            "bro": [
+                "Yo bro! 😎",
+                "Bro! ✨",
+                "What's up bro! 🔥",
+                "Bro code! 💯"
+            ],
+            "sir": [
+                "Sir ji! 🙏",
+                "Sir! ✨",
+                "At your service sir! 😎",
+                "Sir ji, kaisa hai? 🔥"
+            ],
+            "boss": [
+                "Boss! 😎",
+                "Boss ji! ✨",
+                "At your service boss! 🔥",
+                "Kaisa hai boss? 💫"
+            ],
+            "brother": [
+                "Brother! ✨",
+                "Yo brother! 🔥",
+                "What's happening brother! 😎",
+                "Brother from another mother! 💫"
+            ],
+            "friend": [
+                "Dost! ✨",
+                "Yaar! 😎",
+                "Bhai dosto! 🔥",
+                "Dost! 💫"
+            ]
+        }
+        
+        # Time-based addition
+        if hour < 12:
+            time_msg = " Subah ki raat soyi kya? 😏"
+        elif hour < 17:
+            time_msg = " Dopahar ka khana khaya? 🍛"
+        else:
+            time_msg = " Shaam ho gayi! 🌙"
+        
+        return random.choice(greetings.get(self.user_name, ["Hey bhai! ✨"])) + time_msg
+    
+    def _generate_response(self, text: str) -> str:
+        """Generate intelligent response"""
+        
+        # ============================================
+        # SYSTEM COMMANDS
+        # ============================================
+        
+        # Files
+        if any(s in text for s in ["list files", "show files", "files", "folder"]):
+            return system.list_files()
+        
+        if "desktop" in text:
+            return system.list_files(system.desktop)
+        
+        if "downloads" in text:
+            return system.list_files(system.downloads)
+        
+        if "documents" in text:
+            return system.list_files(system.documents)
+        
+        # Create folder
+        if "create folder" in text or "new folder" in text:
+            name = text.replace("create folder", "").replace("new folder", "").strip()
+            if name:
+                return system.create_folder(name)
+            return "Folder ka naam bolo bhai!"
+        
+        # Open app
+        if text.startswith("open "):
+            app = text.replace("open ", "").strip()
+            return system.open_app(app)
+        
+        # Search web
+        if "search" in text:
+            query = text.replace("search", "").replace("web", "").replace("google", "").strip()
+            if query:
+                return system.search_web(query)
+            return "Kya search karna hai bhai?"
+        
+        # System info
+        if "system info" in text or "my pc" in text or "laptop" in text:
+            return system.get_system_info()
+        
+        if "process" in text or "running" in text:
+            return system.get_running_processes()
+        
+        # Settings
+        if "settings" in text or "control panel" in text:
+            return system.open_settings()
+        
+        # Screenshot
+        if "screenshot" in text or "capture" in text:
+            return system.take_screenshot()
+        
+        # Shutdown/Restart
+        if "shutdown" in text or "shut down" in text:
+            return system.shutdown_pc(60)
+        
+        if "restart" in text or "reboot" in text:
+            return system.restart_pc(60)
+        
+        # ============================================
+        # KNOWLEDGE & GENERAL
+        # ============================================
+        
+        # Check knowledge
+        for key, value in self.knowledge.items():
+            if key in text:
+                if isinstance(value, list):
+                    return random.choice(value)
+                return value
+        
+        # Code requests
         if "code" in text:
-            for lang, example in self.knowledge["code_languages"].items():
+            for lang in ["python", "javascript", "java", "rust", "go", "c++"]:
                 if lang in text:
-                    return f"💻 **{lang.capitalize()}:**\n{example}"
-            return "💻 Which language? Try 'code python', 'code javascript', 'code rust', etc."
+                    if lang == "python":
+                        return "💻 **Python:**\n```python\ndef greet(name):\n    return f'Hello, {name}!'\nprint(greet('Bhai'))\n```"
+                    elif lang == "javascript":
+                        return "💻 **JavaScript:**\n```javascript\nconst greet = (name) => `Hello, ${name}!`;\nconsole.log(greet('Bhai'));\n```"
+                    elif lang == "java":
+                        return "💻 **Java:**\n```java\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, Bhai!\");\n    }\n}\n```"
+                    elif lang == "rust":
+                        return "💻 **Rust:**\n```rust\nfn main() {\n    println!(\"Hello, Bhai!\");\n}\n```"
+            return "💻 Kaunsa language? Python, JavaScript, Java, Rust, Go, C++..."
         
         # Math
         if any(m in text for m in ["calculate", "math", "+", "-", "*", "/"]):
             return self._handle_math(text)
         
-        # System info
-        if any(s in text for s in ["system", "cpu", "memory", "ram", "disk"]):
-            return self._get_system_info(text)
+        # Help
+        if "help" in text or "commands" in text or "kya kar sakta" in text:
+            return """📋 **Commands:**
+
+**Files:**
+• "list files" / "show desktop"
+• "create folder [name]"
+• "open [app name]"
+
+**Internet:**
+• "search [query]"
+• "open [website]"
+
+**System:**
+• "system info" / "processes"
+• "screenshot" / "settings"
+• "shutdown" / "restart"
+
+**Language:**
+• "set language hindi/english/marathi"
+
+**Other:**
+• "code python/javascript"
+• "calculate 2+2"
+
+**Bas bolo bhai!** 😎"""
         
         # Who are you
-        if "who are you" in text or "what are you" in text:
-            return """🤖 **I am RAMA AI!**
-
-Your intelligent, self-learning assistant!
-
-✨ Features:
-• 💻 Code in 35+ languages
-• 🧮 Smart calculations
-• 🧠 Self-learning
-• 📁 File management
-• 💻 System control
-• 🌐 Web search
-• 🔍 Analysis
-• 🎭 Sassy personality
-
-I get smarter with every conversation! 🚀"""
+        if "who are you" in text or "what are you" in text or "tu kaun hai" in text:
+            return self.knowledge.get("who are you", "Main RAMA hoon!")
         
-        # Smart fallback
+        # ============================================
+        # SMART FALLBACK
+        # ============================================
+        
         return self._smart_fallback(text)
     
-    def _get_help(self) -> str:
-        return """📋 **Commands I understand:**
-
-💻 **Coding**
-- "code python" / "code javascript" / "code rust"
-- "show java function" / "explain go"
-
-🧮 **Math**
-- "calculate 2+2" / "calculate (10*5)/2"
-
-💻 **System**
-- "cpu info" / "memory info" / "disk info"
-
-📁 **Files**
-- "list files" / "create folder X"
-
-🌐 **Search**
-- "search X" / "find X"
-
-🧠 **Learning**
-- "learn X is Y" / "remember my name"
-
-✨ **General**
-- "help" / "list skills" / "who are you"
-- "languages" / "capabilities"
-
-**Just type naturally!** I'll understand! 🎯"""
-    
-    def _get_capabilities(self) -> str:
-        return """📦 **My Capabilities:**
-
-💻 **Coding** - 35+ languages (Python, JS, Java, Rust, Go, C++, etc.)
-🧮 **Math** - Complex calculations and equations
-🧠 **Learning** - Remember facts, learn from interactions
-📁 **Files** - List, create, manage files and folders
-💻 **System** - CPU, memory, disk info; launch apps
-🌐 **Web** - Search the web, open URLs
-🔍 **Analysis** - Code analysis, debugging help
-🎭 **Personality** - Sassy, witty, clever responses
-📖 **Knowledge** - General knowledge, explanations
-🎙️ **Voice** - Voice I/O (optional)
-
-**I learn and improve over time!** 🚀"""
-    
     def _handle_math(self, text: str) -> str:
+        """Handle math calculations"""
         import re
         import operator
         
-        # Try to extract and calculate
-        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+        # Extract numbers and operators
+        expr = re.sub(r'[^0-9+\-*/().%^ ]', '', text)
         
-        # Simple pattern
-        numbers = re.findall(r'-?\d+\.?\d*', text)
+        if not expr:
+            return "🧮 Number bolo bhai! Jaise: calculate 2+2"
         
-        if not numbers:
-            return "🧮 Give me numbers to calculate! Example: calculate 2+2 or (10*5)/2"
-        
-        if len(numbers) >= 2:
-            try:
-                # Try evaluating the expression
-                expr = re.sub(r'[^0-9+\-*/().]', '', text)
-                if expr:
-                    result = eval(expr)
-                    return f"🧮 **Result:**\n\n`{expr}` = **{result}**\n\n✨ Pretty good at math, right?"
-            except:
-                pass
-            
-            # Simple two-number calculation
-            try:
-                a, b = float(numbers[0]), float(numbers[1])
-                if '+' in text:
-                    return f"🧮 **Calculation:**\n\n{a} + {b} = **{a + b}**"
-                elif '-' in text:
-                    return f"🧮 **Calculation:**\n\n{a} - {b} = **{a - b}**"
-                elif '*' in text:
-                    return f"🧮 **Calculation:**\n\n{a} * {b} = **{a * b}**"
-                elif '/' in text and b != 0:
-                    return f"🧮 **Calculation:**\n\n{a} / {b} = **{a / b}**"
-            except:
-                pass
-        
-        return "🧮 Try format like: calculate 2+2 or calculate 100/5"
-    
-    def _get_system_info(self, text: str) -> str:
         try:
-            import psutil
-            import platform
-            
-            if "cpu" in text:
-                return f"⚡ **CPU:** {psutil.cpu_count()} cores @ {psutil.cpu_percent()}%"
-            
-            if "memory" in text or "ram" in text:
-                mem = psutil.virtual_memory()
-                return f"🧠 **RAM:** {mem.percent}% used ({mem.used/1024**3:.1f}/{mem.total/1024**3:.1f} GB)"
-            
-            if "disk" in text:
-                disk = psutil.disk_usage('/')
-                return f"💾 **Disk:** {disk.percent}% used ({disk.used/1024**3:.1f}/{disk.total/1024**3:.1f} GB)"
-            
-            return f"💻 **{platform.system()}:** {platform.node()}\n⚡ CPU: {psutil.cpu_count()} cores\n🧠 RAM: {psutil.virtual_memory().percent}%"
+            # Safe evaluation
+            result = eval(expr)
+            return f"🧮 **Calculation:**\n\n`{expr}` = **{result}**\n\nKya aur calculate karna hai bhai? 🔥"
         except:
-            return "💻 Install psutil for system info: pip install psutil"
+            return "🧮 Thik se likho bhai! Jaise: (10+5)*2"
     
     def _smart_fallback(self, text: str) -> str:
-        cleverness = [
-            "Interesting! 🤔 Let me think about that...",
-            "Great question! 💫 Here's what I know...",
-            "Ah! 😄 That's a good one!",
-            "Hmm... 💭 Let me share my perspective...",
-            "Got it! 🌟 Here's my thoughts...",
+        """Generate clever fallback"""
+        
+        sassy = [
+            "Hmm... 😏 Interesting!",
+            "Arrey bhai! ✨",
+            "Boht interesting! 🔥",
+            "Socho toh sahi! 💭"
         ]
         
         responses = [
-            "I'm your AI assistant! 🤖 I can help with coding, math, files, system tasks, and much more!\n\n"
-            "Try asking me about:\n"
-            "• Code in any language\n"
-            "• Calculations\n"
-            "• System information\n"
-            "• File management\n"
-            "• Learning new things\n\n"
-            "What would you like to try?",
+            "Main RAMA hoon - tera intelligent AI assistant!\n\nKya karna hai bhai?\n• Files manage kar sakta hoon\n• Apps open kar sakta hoon\n• Internet search kar sakta hoon\n• Code bana sakta hoon\n• Math calculate kar sakta hoon\n\nBas bolo! 😎",
             
-            "That's a fascinating topic! 🌟 While I don't have specific info on that, I'm great at:\n"
-            "• Writing & debugging code\n"
-            "• Math & calculations\n"
-            "• System operations\n"
-            "• Explaining concepts\n\n"
-            "How can I help you today?",
+            "Kya pooch raha hai bhai? 😏\n\nTry:\n• 'search python tutorial'\n• 'open notepad'\n• 'system info'\n• 'code python'\n• 'calculate 100*5'",
             
-            "You've sparked my curiosity! 🔥 I'm smartest when we work on code, math, or tasks together.\n\n"
-            "Just ask me anything! I'm always learning and improving! 📚",
+            "Abhi thoda confuse hua! 😅\n\nYe try kar:\n• Files: 'list files'\n• Apps: 'open chrome'\n• Search: 'search something'\n• Info: 'system info'\n\nKya chahiye bhai? 🔥"
         ]
         
-        return random.choice(cleverness) + "\n\n" + random.choice(responses)
-
-
-async def run_cli():
-    """Run CLI mode with enhanced AI"""
-    print("\n" + "="*50)
-    print("   🤖 RAMA AI v2.0 - Enhanced Intelligence")
-    print("="*50)
-    print("\n💡 Type 'help' for commands\n")
+        return random.choice(sassy) + "\n\n" + random.choice(responses)
     
-    rama = SmartRama()
+    def _add_personality(self, response: str) -> str:
+        """Add personality to response"""
+        # Get time-based greeting feel
+        hour = datetime.now().hour
+        
+        if hour < 12:
+            time_feel = "☀️ Subah ki roshni mein "
+        elif hour < 17:
+            time_feel = "🔥 Dopahar ki dhup mein "
+        else:
+            time_feel = "🌙 Shaam ki haseen twilight mein "
+        
+        # Add sassy touches randomly
+        if random.random() > 0.7:
+            touches = [" 😏", " 🔥", " ✨", " 💫", " 😎", " 💯"]
+            response += random.choice(touches)
+        
+        return response
+
+
+# ============================================
+# MAIN CLI
+# ============================================
+
+async def main():
+    print("\n" + "="*60)
+    print("   🤖 RAMA AI v2.0 - Your Desi AI Assistant!")
+    print("   💋 Sexy • Sassy • Realistic • Multilingual")
+    print("="*60)
+    print()
+    print("😎 Bolo bhai - kya karna hai?")
+    print("   'help' for commands")
+    print("   'set language hindi' for Hindi")
+    print()
+    
+    rama = RAMAAI()
+    
+    # Initial greeting
+    print(f"\n🤖 {rama._get_greeting()}\n")
     
     while True:
         try:
-            user_input = input("You: ").strip()
+            user_input = input(f"You ({rama.user_name}): ").strip()
             
             if not user_input:
                 continue
             
-            if user_input.lower() in ['exit', 'quit', 'bye']:
-                print("\n👋 Goodbye! It was great chatting!")
+            if user_input.lower() in ['exit', 'quit', 'bye', 'chal']:
+                print("\n👋 Alvida bhai! Phir milenge! ✨")
                 break
             
-            # Get smart response
+            # Get response
             response = rama.process(user_input)
             print(f"\n🤖 Rama: {response}\n")
             
         except KeyboardInterrupt:
-            print("\n👋 Bye!")
+            print("\n👋 Bye bhai!")
             break
         except Exception as e:
-            print(f"\n❌ Oops: {e}\n")
-
-
-async def main():
-    """Main entry point"""
-    deps = check_dependencies()
-    print(f"🔧 Available: {', '.join([k for k,v in deps.items() if v])}")
-    await run_cli()
+            print(f"\n❌ Error: {e}\n")
 
 
 if __name__ == "__main__":
