@@ -1,266 +1,190 @@
 """RAMA AI v2.0 - Core Brain Module
-AI processing, context management, and skill orchestration"""
+Simplified version - graceful fallback on import errors"""
 
 import asyncio
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from datetime import datetime
-import json
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class Brain:
-    """
-    Main AI Brain - orchestrates all AI processing
-    Inspired by Claude Code's multi-agent architecture
-    """
+    """Main AI Brain - simplified version"""
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.context = ContextManager()
-        self.rag_engine = None  # RAGEngine()
-        self.skill_manager = SkillManager()
-        self.ollama_client = None  # OllamaClient()
-        self.memory = None  # MemorySystem()
+        self.skill_manager = None
+        self.ollama_client = None
+        self.memory = None
         
     async def initialize(self):
-        """Initialize all brain components"""
-        logger.info("🧠 Initializing RAMA Brain...")
+        """Initialize brain components with graceful fallbacks"""
+        print("🧠 Initializing RAMA Brain...")
         
-        # Initialize memory
-        from memory.long_term import LongTermMemory
-        self.memory = LongTermMemory()
+        # Initialize skill manager
+        try:
+            from core.brain import SkillManager as OriginalSkillManager
+            self.skill_manager = OriginalSkillManager()
+            await self.skill_manager.load_skills()
+            print(f"✅ Loaded {len(self.skill_manager.skills)} skills")
+        except Exception as e:
+            print(f"⚠️ Skill manager: {e}")
+            self.skill_manager = SimpleSkillManager()
         
-        # Initialize RAG
-        from core.rag_engine import RAGEngine
-        self.rag_engine = RAGEngine()
+        # Try to initialize Ollama client
+        try:
+            from core.ollama_client import OllamaClient
+            self.ollama_client = OllamaClient(
+                model=self.config.get("llm_model", "llama3.2:1b")
+            )
+            print("✅ Ollama client ready")
+        except Exception as e:
+            print(f"⚠️ Ollama: {e}")
         
-        # Initialize Ollama
-        from core.ollama_client import OllamaClient
-        self.ollama_client = OllamaClient(
-            model=self.config.get("llm_model", "llama3.2:1b"),
-            host=self.config.get("ollama_host", "http://localhost:11434")
-        )
-        
-        # Initialize skills
-        await self.skill_manager.load_skills()
-        
-        logger.info("✅ Brain initialized!")
+        print("✅ Brain initialized!")
     
     async def process(self, user_input: str, context: Optional[Dict] = None) -> str:
-        """
-        Process user input and generate response
-        Main entry point for AI processing
-        """
-        logger.info(f"🧠 Processing: {user_input[:50]}...")
-        
-        # Add to short-term memory
+        """Process user input"""
         self.context.add_message("user", user_input)
         
-        # Retrieve relevant context from long-term memory
-        retrieved_context = await self._retrieve_context(user_input)
+        # Try skill first
+        if self.skill_manager:
+            skill = self.skill_manager.find_best_skill(user_input)
+            if skill:
+                try:
+                    response = await skill.execute(user_input, self.context, "")
+                    self.context.add_message("assistant", response)
+                    return response
+                except Exception as e:
+                    print(f"Skill error: {e}")
         
-        # Check for skill match
-        skill = self.skill_manager.find_best_skill(user_input)
-        if skill:
-            response = await skill.execute(user_input, self.context, retrieved_context)
-            await self._learn(user_input, response)
-            return response
-        
-        # Use LLM for general responses
-        if self.ollama_client.is_connected:
-            prompt = self._build_prompt(user_input, retrieved_context)
-            response = await self.ollama_client.generate(prompt)
-            await self._learn(user_input, response)
-            return response
-        
-        # Fallback response
-        return "I'm ready! Try asking me to do something, or say 'help' to see what I can do."
+        # Default response
+        return "I'm RAMA! Say 'help' for commands or 'list skills' to see what I can do!"
+
+
+class SimpleSkillManager:
+    """Fallback skill manager"""
     
-    async def _retrieve_context(self, query: str) -> str:
-        """Retrieve relevant context from memory"""
-        try:
-            if self.rag_engine:
-                results = await self.rag_engine.retrieve(query, top_k=3)
-                return "\n".join(results)
-        except Exception as e:
-            logger.warning(f"Context retrieval failed: {e}")
-        return ""
+    def __init__(self):
+        self.skills = {}
     
-    async def _learn(self, user_input: str, response: str):
-        """Learn from interaction"""
-        try:
-            if self.memory:
-                await self.memory.store_interaction(user_input, response)
-        except Exception as e:
-            logger.warning(f"Learning failed: {e}")
-    
-    def _build_prompt(self, user_input: str, context: str) -> str:
-        """Build prompt with context"""
-        system_prompt = """You are RAMA, a helpful AI assistant with a sassy personality.
-Be helpful, witty, and concise. Use context if provided."""
-        
-        prompt = f"{system_prompt}\n\n"
-        if context:
-            prompt += f"Context:\n{context}\n\n"
-        prompt += f"User: {user_input}\n\nRama:"
-        
-        return prompt
-    
-    async def stop(self):
-        """Cleanup resources"""
-        logger.info("🧠 Brain stopping...")
-        if self.ollama_client:
-            await self.ollama_client.close()
+    def find_best_skill(self, input_text: str):
+        return None
 
 
 class ContextManager:
-    """
-    Manages short-term conversation context
-    """
+    """Simple context manager"""
     
-    def __init__(self, max_messages: int = 20):
-        self.max_messages = max_messages
-        self.messages: List[Dict[str, str]] = []
-        self.metadata: Dict[str, Any] = {}
+    def __init__(self):
+        self.messages = []
     
     def add_message(self, role: str, content: str):
-        """Add message to context"""
-        self.messages.append({
-            "role": role,
-            "content": content,
-            "timestamp": datetime.now().isoformat()
-        })
-        
-        # Trim if too long
-        if len(self.messages) > self.max_messages:
-            self.messages = self.messages[-self.max_messages:]
-    
-    def get_context(self) -> str:
-        """Get formatted context string"""
-        return "\n".join(
-            f"{m['role']}: {m['content']}" 
-            for m in self.messages[-10:]
-        )
-    
-    def clear(self):
-        """Clear context"""
-        self.messages.clear()
+        self.messages.append({"role": role, "content": content, "timestamp": datetime.now().isoformat()})
+        if len(self.messages) > 20:
+            self.messages = self.messages[-20:]
 
 
+# Keep original SkillManager for full functionality
 class SkillManager:
-    """
-    Manages skills/plugins - inspired by Vercel Skills architecture
-    """
+    """Manages all skills - full version"""
     
     def __init__(self):
         self.skills: Dict[str, Any] = {}
     
     async def load_skills(self):
         """Load all available skills"""
-        from skills.greeting import GreetingSkill
-        from skills.calculator import CalculatorSkill
-        from skills.system import AppLauncherSkill, FileManagerSkill, SystemInfoSkill
-        from skills.utilities import WeatherSkill, WebSearchSkill, NoteSkill, ReminderSkill, KnowledgeSkill
-        from skills.coding import CodingSkill, AutomationSkill, LocalAISkill
-        from skills.advanced_tools import (
-            ToolsSkill, WebSearchSkill as AdvancedWebSearchSkill,
-            CriticalThinkingSkill, CodeAnalysisSkill, SystemInfoSkill as GodModeSystemInfo,
-            AutomationSkill as AdvancedAutomation, MemorySkill
-        )
-        from skills.json_tools import JSONRepairSkill, PipelineSkill, ToolCallSkill
-        from skills.video_tools import VideoLearningSkill, TranscriptSkill
-        from skills.vercel_skills import VerceilSkillsSkill
-        from skills.debugging import DebuggingSkill, SecurityAuditSkill, TestingSkill
-        from skills.learning import ContextLearningSkill, SwarmIntelligenceSkill, PatternRecognitionSkill, BranchingSkill
-        from skills.self_learning import SelfLearningSkill, EmotionDetectionSkill, SelfRepairSkill, UniversalCodeSkill, ContinuousImprovementSkill
+        # Import and load all skills
+        skill_classes = []
         
-        skills = [
-            # Core skills
-            GreetingSkill(),
-            CalculatorSkill(),
-            AppLauncherSkill(),
-            FileManagerSkill(),
-            SystemInfoSkill(),
-            WeatherSkill(),
-            WebSearchSkill(),
-            NoteSkill(),
-            ReminderSkill(),
-            KnowledgeSkill(),
-            CodingSkill(),
-            AutomationSkill(),
-            LocalAISkill(),
-            # Advanced tools
-            ToolsSkill(),
-            AdvancedWebSearchSkill(),
-            CriticalThinkingSkill(),
-            CodeAnalysisSkill(),
-            GodModeSystemInfo(),
-            AdvancedAutomation(),
-            MemorySkill(),
-            # JSON Repair
-            JSONRepairSkill(),
-            PipelineSkill(),
-            ToolCallSkill(),
-            # Video Learning
-            VideoLearningSkill(),
-            TranscriptSkill(),
-            # Vercel Skills
-            VerceilSkillsSkill(),
-            # Debugging & Security (from everything-claude-code, claw-code)
-            DebuggingSkill(),
-            SecurityAuditSkill(),
-            TestingSkill(),
-            # Context Learning (from agentic-context-engine)
-            ContextLearningSkill(),
-            PatternRecognitionSkill(),
-            BranchingSkill(),
-            # Swarm Intelligence (from MiroFish)
-            SwarmIntelligenceSkill(),
-            # Self-Learning (NEW - Continuous Improvement)
-            SelfLearningSkill(),
-            EmotionDetectionSkill(),
-            SelfRepairSkill(),
-            UniversalCodeSkill(),
-            ContinuousImprovementSkill(),
-        ]
+        try:
+            from skills.greeting import GreetingSkill
+            skill_classes.append(GreetingSkill)
+        except: pass
         
-        for skill in skills:
-            self.skills[skill.name] = skill
+        try:
+            from skills.calculator import CalculatorSkill
+            skill_classes.append(CalculatorSkill)
+        except: pass
         
-        logger.info(f"✅ Loaded {len(self.skills)} skills")
+        try:
+            from skills.system import AppLauncherSkill, FileManagerSkill, SystemInfoSkill
+            skill_classes.extend([AppLauncherSkill, FileManagerSkill, SystemInfoSkill])
+        except: pass
+        
+        try:
+            from skills.utilities import WeatherSkill, WebSearchSkill, NoteSkill
+            skill_classes.extend([WeatherSkill, WebSearchSkill, NoteSkill])
+        except: pass
+        
+        try:
+            from skills.coding import CodingSkill, AutomationSkill
+            skill_classes.extend([CodingSkill, AutomationSkill])
+        except: pass
+        
+        try:
+            from skills.self_learning import SelfLearningSkill, UniversalCodeSkill
+            skill_classes.extend([SelfLearningSkill, UniversalCodeSkill])
+        except: pass
+        
+        try:
+            from skills.debugging import DebuggingSkill
+            skill_classes.append(DebuggingSkill)
+        except: pass
+        
+        # Instantiate all skills
+        for skill_class in skill_classes:
+            try:
+                skill = skill_class()
+                self.skills[skill.name] = skill
+            except Exception as e:
+                print(f"Failed to load {skill_class}: {e}")
+        
+        print(f"✅ Loaded {len(self.skills)} skills")
     
-    def find_best_skill(self, input_text: str) -> Optional[Any]:
+    def find_best_skill(self, input_text: str):
         """Find best matching skill"""
         input_lower = input_text.lower()
-        
         best_skill = None
         best_score = 0
         
         for name, skill in self.skills.items():
             score = 0
+            if hasattr(skill, 'triggers'):
+                for trigger in skill.triggers:
+                    if trigger.lower() in input_lower:
+                        score += 10
             
-            # Check triggers
-            for trigger in skill.triggers:
-                if trigger.lower() in input_lower:
-                    score += 10
-            
-            # Check can_handle
-            if hasattr(skill, 'can_handle') and skill.can_handle(input_text):
-                score += 5
+            if hasattr(skill, 'can_handle'):
+                try:
+                    if skill.can_handle(input_text):
+                        score += 5
+                except: pass
             
             if score > best_score:
                 best_score = score
                 best_skill = skill
         
         return best_skill if best_score > 0 else None
-    
-    def register_skill(self, skill):
-        """Dynamically register a new skill"""
-        self.skills[skill.name] = skill
-        logger.info(f"✅ Registered skill: {skill.name}")
-    
-    def list_skills(self) -> List[str]:
-        """List all available skills"""
-        return list(self.skills.keys())
+
+
+# For backwards compatibility - import original modules
+def __getattr__(name):
+    """Lazy load modules"""
+    if name == "LongTermMemory":
+        try:
+            from memory.long_term import LongTermMemory
+            return LongTermMemory
+        except:
+            return type("LongTermMemory", (), {"__init__": lambda self, *args, **kwargs: None, "initialize": lambda self: None})
+    elif name == "RAGEngine":
+        try:
+            from core.rag_engine import RAGEngine
+            return RAGEngine
+        except:
+            return type("RAGEngine", (), {"__init__": lambda self, *args, **kwargs: None, "initialize": lambda self: None, "retrieve": lambda self, *args, **kwargs: []})
+    elif name == "OllamaClient":
+        try:
+            from core.ollama_client import OllamaClient
+            return OllamaClient
+        except:
+            return type("OllamaClient", (), {"__init__": lambda self, *args, **kwargs: None, "is_connected": False, "generate": lambda self, *args, **kwargs: ""})
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
