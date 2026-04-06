@@ -35,6 +35,14 @@ from .swarm_intelligence import (
     PredictionEngine
 )
 
+# Self-Learning Engine (NEW - Continuous Improvement)
+from .self_learning import (
+    SelfLearningEngine,
+    EmotionLearningSystem,
+    SelfRepairSystem,
+    UniversalCodeKnowledge
+)
+
 __all__ = [
     'WebSearchTool',
     'CriticalThinkingTool', 
@@ -59,4 +67,8 @@ __all__ = [
     'ForecastingTool',
     'OptimizationTool',
     'PredictionEngine',
+    'SelfLearningEngine',
+    'EmotionLearningSystem',
+    'SelfRepairSystem',
+    'UniversalCodeKnowledge',
 ]

@@ -174,6 +174,7 @@ class SkillManager:
         from skills.vercel_skills import VerceilSkillsSkill
         from skills.debugging import DebuggingSkill, SecurityAuditSkill, TestingSkill
         from skills.learning import ContextLearningSkill, SwarmIntelligenceSkill, PatternRecognitionSkill, BranchingSkill
+        from skills.self_learning import SelfLearningSkill, EmotionDetectionSkill, SelfRepairSkill, UniversalCodeSkill, ContinuousImprovementSkill
         
         skills = [
             # Core skills
@@ -217,6 +218,12 @@ class SkillManager:
             BranchingSkill(),
             # Swarm Intelligence (from MiroFish)
             SwarmIntelligenceSkill(),
+            # Self-Learning (NEW - Continuous Improvement)
+            SelfLearningSkill(),
+            EmotionDetectionSkill(),
+            SelfRepairSkill(),
+            UniversalCodeSkill(),
+            ContinuousImprovementSkill(),
         ]
         
         for skill in skills:
