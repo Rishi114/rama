@@ -18,6 +18,23 @@ from .json_tools import JSONRepairTool, JSONPipelineTool, ToolCallParser
 # Video Learning Tools
 from .video_tools import VideoLearningTool, TranscriptExtractor, VideoAnalysisTool
 
+# Context Engine (based on agentic-context-engine)
+from .context_engine import (
+    ContextEngine,
+    ContextPipeline,
+    DeduplicationTool,
+    BranchManager,
+    ExperienceLearner
+)
+
+# Swarm Intelligence (based on MiroFish)
+from .swarm_intelligence import (
+    SwarmIntelligence,
+    ForecastingTool,
+    OptimizationTool,
+    PredictionEngine
+)
+
 __all__ = [
     'WebSearchTool',
     'CriticalThinkingTool', 
@@ -33,4 +50,13 @@ __all__ = [
     'VideoLearningTool',
     'TranscriptExtractor',
     'VideoAnalysisTool',
+    'ContextEngine',
+    'ContextPipeline',
+    'DeduplicationTool',
+    'BranchManager',
+    'ExperienceLearner',
+    'SwarmIntelligence',
+    'ForecastingTool',
+    'OptimizationTool',
+    'PredictionEngine',
 ]

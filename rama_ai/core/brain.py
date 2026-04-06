@@ -172,6 +172,8 @@ class SkillManager:
         from skills.json_tools import JSONRepairSkill, PipelineSkill, ToolCallSkill
         from skills.video_tools import VideoLearningSkill, TranscriptSkill
         from skills.vercel_skills import VerceilSkillsSkill
+        from skills.debugging import DebuggingSkill, SecurityAuditSkill, TestingSkill
+        from skills.learning import ContextLearningSkill, SwarmIntelligenceSkill, PatternRecognitionSkill, BranchingSkill
         
         skills = [
             # Core skills
@@ -205,6 +207,16 @@ class SkillManager:
             TranscriptSkill(),
             # Vercel Skills
             VerceilSkillsSkill(),
+            # Debugging & Security (from everything-claude-code, claw-code)
+            DebuggingSkill(),
+            SecurityAuditSkill(),
+            TestingSkill(),
+            # Context Learning (from agentic-context-engine)
+            ContextLearningSkill(),
+            PatternRecognitionSkill(),
+            BranchingSkill(),
+            # Swarm Intelligence (from MiroFish)
+            SwarmIntelligenceSkill(),
         ]
         
         for skill in skills:
